@@ -2,24 +2,36 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * DatabaseSeeder
+ *
+ * Orchestrates all seeders in the correct order.
+ * Order matters — SuperAdmin must exist before DemoSeeder runs.
+ *
+ * Commands:
+ *   php artisan db:seed              — runs all seeders
+ *   php artisan db:seed --class=DemoSeeder — runs one seeder only
+ *   php artisan migrate:fresh --seed — fresh DB + all seeders
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Core data — always runs in all environments
+        $this->call([
+            SuperAdminSeeder::class,
+            SkillSeeder::class,
+            AchievementSeeder::class,
         ]);
+
+        // Demo data — only in development
+        // Remove DemoSeeder from this list before deploying to production
+        if (app()->environment('local')) {
+            $this->call([
+                DemoSeeder::class,
+            ]);
+        }
     }
 }
