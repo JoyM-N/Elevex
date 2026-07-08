@@ -1,8 +1,6 @@
 <?php
 
 return [
-
-    // Which routes CORS headers apply to
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
@@ -12,10 +10,14 @@ return [
     ],
 
     'allowed_origins_patterns' => [],
+
     'allowed_headers' => ['*'],
+
     'exposed_headers' => [],
+
     'max_age' => 0,
 
+    // Critical for Sanctum cookie auth
+    // Without this cookies are blocked on cross origin requests
     'supports_credentials' => true,
-
 ];
