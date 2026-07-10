@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
+        // Enables Sanctum's SPA cookie-based authentication.
+        // This adds EnsureFrontendRequestsAreStateful + session
+        // handling to the "api" middleware group correctly.
+        $middleware->statefulApi();
+
+        // Register our custom role middleware
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);

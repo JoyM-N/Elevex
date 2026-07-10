@@ -5,18 +5,6 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
-/**
- * ResetPasswordRequest
- *
- * Validates the password reset form.
- * Requires the token from the reset email,
- * the user's email, and a strong new password.
- *
- * Password rules:
- *   min 8 characters
- *   must have mixed case
- *   must have at least one number
- */
 class ResetPasswordRequest extends FormRequest
 {
     public function authorize(): bool

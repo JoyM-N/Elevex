@@ -27,9 +27,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // =========================================================
-    // Health Check — Public
-    // =========================================================
     Route::get('/health', function () {
         return response()->json([
             'success' => true,
@@ -38,10 +35,6 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // =========================================================
-    // Authentication Routes — Public
-    // No session required to hit these
-    // =========================================================
     Route::prefix('auth')->name('auth.')->group(function () {
 
         // Login — establishes session cookie
@@ -58,22 +51,17 @@ Route::prefix('v1')->group(function () {
 
     });
 
-    // =========================================================
     // Authenticated Routes — Valid session required
     // auth:sanctum checks the session cookie on every request
-    // =========================================================
+
     Route::middleware('auth:sanctum')->group(function () {
 
-        // Get current authenticated user
-        // Frontend calls this on load to hydrate user state
         Route::get('auth/user', [AuthController::class, 'user'])
             ->name('auth.user');
 
-        // Logout — invalidates session
         Route::post('auth/logout', [AuthController::class, 'logout'])
             ->name('auth.logout');
 
-        // Change password — requires current password
         Route::put('auth/password', [AuthController::class, 'changePassword'])
             ->name('auth.password.change');
 
