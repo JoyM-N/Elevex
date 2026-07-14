@@ -77,20 +77,6 @@ class AuthenticationService
         }
     }
 
-    /**
-     * Change password for an already authenticated user.
-     *
-     * Unlike resetPassword() this requires the current password.
-     * This is a security measure — prevents someone from changing
-     * a password on an unattended logged in session.
-     *
-     * Steps:
-     *   1. Verify current password matches what is stored
-     *   2. Hash the new password
-     *   3. Save to database
-     *
-     * @throws ValidationException
-     */
     public function changePassword(User $user, string $currentPassword, string $newPassword): void
     {
         // Verify current password before allowing the change

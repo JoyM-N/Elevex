@@ -3,30 +3,9 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Elevex API Routes — v1
-|--------------------------------------------------------------------------
-|
-| Route groups explained:
-|
-| Public routes — no authentication required
-|   Anyone can hit these endpoints.
-|   Used for login, password reset etc.
-|
-| Authenticated routes — requires valid session
-|   'auth:sanctum' middleware checks for a valid session cookie.
-|   Returns 401 if not authenticated.
-|
-| Role protected routes — requires authentication + specific role
-|   'role:admin' — only admins and super admins
-|   'role:intern' — only interns
-|   Built in Phase 4 when we add Policies and authorization.
-|
-*/
-
 Route::prefix('v1')->group(function () {
 
+    // Health Check — no auth required
     Route::get('/health', function () {
         return response()->json([
             'success' => true,
@@ -35,36 +14,50 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    // Public Auth Routes — no authentication required
     Route::prefix('auth')->name('auth.')->group(function () {
-
-        // Login — establishes session cookie
         Route::post('login', [AuthController::class, 'login'])
             ->name('login');
 
-        // Forgot password — sends reset email
         Route::post('forgot-password', [AuthController::class, 'forgotPassword'])
             ->name('forgot-password');
 
-        // Reset password — uses token from email
         Route::post('reset-password', [AuthController::class, 'resetPassword'])
             ->name('reset-password');
-
     });
 
-    // Authenticated Routes — Valid session required
-    // auth:sanctum checks the session cookie on every request
+    // Authenticated Routes — any role
+    Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::middleware('auth:sanctum')->group(function () {
+        // Auth
+        Route::prefix('auth')->name('auth.')->group(function () {
+            Route::get('user', [AuthController::class, 'user'])
+                ->name('user');
 
-        Route::get('auth/user', [AuthController::class, 'user'])
-            ->name('auth.user');
+            Route::post('logout', [AuthController::class, 'logout'])
+                ->name('logout');
 
-        Route::post('auth/logout', [AuthController::class, 'logout'])
-            ->name('auth.logout');
-
-        Route::put('auth/password', [AuthController::class, 'changePassword'])
-            ->name('auth.password.change');
-
+            Route::put('password', [AuthController::class, 'changePassword'])
+                ->name('password.change');
+        });
     });
+
+    // Super Admin Routes — role: super_admin only
+    Route::middleware(['auth:sanctum', 'role:super_admin'])
+        ->prefix('super-admin')
+        ->name('super-admin.')
+        ->group(base_path('routes/api/super_admin.php'));
+
+    // Admin Routes — role: super_admin or admin
+    Route::middleware(['auth:sanctum', 'role:super_admin,admin'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(base_path('routes/api/admin.php'));
+
+    // Intern Routes — role: intern only
+    Route::middleware(['auth:sanctum', 'role:intern'])
+        ->prefix('intern')
+        ->name('intern.')
+        ->group(base_path('routes/api/intern.php'));
 
 });
