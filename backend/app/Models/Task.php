@@ -49,7 +49,7 @@ class Task extends Model
 
     public function isOverdue(): bool
     {
-        return !$this->isTerminal()
+        return !$this->is_terminal
             && $this->deadline
             && now()->isAfter($this->deadline);
     }

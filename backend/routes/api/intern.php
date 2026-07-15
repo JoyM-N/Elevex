@@ -1,12 +1,22 @@
 <?php
 
+use App\Http\Controllers\Api\Intern\TaskController;
 use Illuminate\Support\Facades\Route;
 
-// Placeholder — Intern routes added per phase as features are built
+/*
+|--------------------------------------------------------------------------
+| Intern Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/dashboard', function () {
     return response()->json([
         'success' => true,
         'message' => 'Intern dashboard.',
-        'data'    => [],
     ]);
 });
+
+// Tasks — interns can view their own and complete them
+Route::get('tasks', [TaskController::class, 'index']);
+Route::get('tasks/{task}', [TaskController::class, 'show']);
+Route::patch('tasks/{task}/complete', [TaskController::class, 'complete']);
