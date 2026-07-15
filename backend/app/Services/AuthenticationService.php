@@ -9,39 +9,61 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 
 class AuthenticationService
 {
 
-    public function login(array $credentials, bool $remember = false): User
+    /**
+     * @return array{user: User, token: string}
+     */
+    public function login(array $credentials, bool $remember = false, string $tokenName = 'api'): array
     {
         if (!Auth::guard('web')->attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-    
+
+        /** @var User $user */
         $user = Auth::guard('web')->user();
-    
+
         if (!$user->is_active) {
             Auth::guard('web')->logout();
-    
+
             throw ValidationException::withMessages([
                 'email' => ['Your account has been deactivated. Please contact an administrator.'],
             ]);
         }
-    
-        request()->session()->regenerate();
-    
-        return $user;
+
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
+
+        $token = $user->createToken($tokenName)->plainTextToken;
+
+        return [
+            'user'  => $user,
+            'token' => $token,
+        ];
     }
+
     public function logout(): void
     {
+        $user = request()->user();
+        $accessToken = $user?->currentAccessToken();
+
+        if ($accessToken instanceof PersonalAccessToken) {
+            $accessToken->delete();
+        }
+
         Auth::guard('web')->logout();
-    
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
     }
 
     public function sendPasswordResetLink(string $email): void

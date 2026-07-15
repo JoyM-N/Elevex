@@ -25,18 +25,22 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = $this->authService->login(
+        $result = $this->authService->login(
             credentials: $request->only('email', 'password'),
-            remember: $request->boolean('remember')
+            remember: $request->boolean('remember'),
+            tokenName: $request->input('device_name', 'api'),
         );
 
         return $this->success(
-            data: new UserResource($user),
+            data: [
+                'user'       => new UserResource($result['user']),
+                'token'      => $result['token'],
+                'token_type' => 'Bearer',
+            ],
             message: 'Login successful.'
         );
     }
 
-  
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout();
