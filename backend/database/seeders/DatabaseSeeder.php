@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         // Core data — always runs in all environments
         $this->call([
             SuperAdminSeeder::class,
+            InternSeeder::class,
             SkillSeeder::class,
             AchievementSeeder::class,
         ]);

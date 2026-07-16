@@ -4,18 +4,8 @@ namespace App\Policies;
 
 use App\Models\Logbook;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
-/**
- * LogbookPolicy
- *
- * Controls who can manage logbook entries.
- *
- * Critical rule:
- *   Approved logbooks are permanently read-only.
- *   Once approved, no one — not even the admin who approved it
- *   or the super admin — can edit it.
- *   This protects the integrity of the audit trail.
- */
 class LogbookPolicy
 {
     public function viewAny(User $user): bool
@@ -24,27 +14,43 @@ class LogbookPolicy
     }
 
 
-    public function view(User $user, Logbook $logbook): bool
+    public function view(User $user, Logbook $logbook): Response|bool
     {
         if ($user->isAdminOrAbove()) {
             return true;
         }
 
-        return $user->id === $logbook->user_id;
-    }
-
-    public function create(User $user): bool
-    {
-        return $user->isIntern();
-    }
-
-    public function update(User $user, Logbook $logbook): bool
-    {
-        if ($logbook->isLocked()) {
-            return false;
+        if ($user->id !== $logbook->user_id) {
+            return Response::deny(
+                'This logbook belongs to another intern. List your own entries with GET /api/v1/intern/logbooks.'
+            );
         }
 
-        return $user->id === $logbook->user_id;
+        return true;
+    }
+
+    public function create(User $user): Response|bool
+    {
+        if ($user->isIntern()) {
+            return true;
+        }
+
+        return Response::deny(
+            'Only interns can create logbooks. Log in with an intern account and use POST /api/v1/intern/logbooks.'
+        );
+    }
+
+    public function update(User $user, Logbook $logbook): Response|bool
+    {
+        if ($logbook->isLocked()) {
+            return Response::deny('Approved logbooks are read-only and cannot be edited.');
+        }
+
+        if ($user->id !== $logbook->user_id) {
+            return Response::deny('You can only update your own logbooks.');
+        }
+
+        return true;
     }
 
     public function submit(User $user, Logbook $logbook): bool

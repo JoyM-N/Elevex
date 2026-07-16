@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\LogbookController;
 use App\Http\Controllers\Api\Admin\MilestoneController;
 use App\Http\Controllers\Api\Admin\ProjectController;
 use App\Http\Controllers\Api\Admin\TaskController;
@@ -28,3 +29,9 @@ Route::apiResource('projects.milestones', MilestoneController::class);
 
 // Tasks
 Route::apiResource('tasks', TaskController::class);
+
+// Logbooks
+Route::get('logbooks', [LogbookController::class, 'index']);
+Route::get('logbooks/{logbook}', [LogbookController::class, 'show']);
+Route::patch('logbooks/{logbook}/review', [LogbookController::class, 'review']);
+Route::post('logbooks/{logbook}/comments', [LogbookController::class, 'addComment']);

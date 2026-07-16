@@ -20,14 +20,21 @@ class RoleMiddleware
             return $this->unauthorized('Unauthenticated.');
         }
 
+        // Super Admin can access any role-gated route (matches Gate::before).
+        if ($user->isSuperAdmin()) {
+            return $next($request);
+        }
+
         $allowedRoles = array_map(
             fn(string $role) => UserRole::from($role),
             $roles
         );
 
         if (!in_array($user->role, $allowedRoles)) {
+            $required = implode(' or ', $roles);
+
             return $this->forbidden(
-                'You do not have permission to access this resource.'
+                "This route requires the '{$required}' role. You are logged in as '{$user->role->value}'."
             );
         }
         return $next($request);
