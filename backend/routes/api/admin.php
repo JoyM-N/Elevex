@@ -1,16 +1,19 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\EvaluationController;
 use App\Http\Controllers\Api\Admin\LogbookController;
 use App\Http\Controllers\Api\Admin\MilestoneController;
+use App\Http\Controllers\Api\Admin\NotificationController;
 use App\Http\Controllers\Api\Admin\PerformanceController;
 use App\Http\Controllers\Api\Admin\ProjectController;
+use App\Http\Controllers\Api\Admin\PublicHolidayController;
 use App\Http\Controllers\Api\Admin\RecommendationController;
 use App\Http\Controllers\Api\Admin\ReportController;
 use App\Http\Controllers\Api\Admin\SkillController;
+use App\Http\Controllers\Api\Admin\SickDayController;
 use App\Http\Controllers\Api\Admin\TaskController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +21,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 |--------------------------------------------------------------------------
 */
 
+// Dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
 
 // Projects
@@ -60,3 +64,16 @@ Route::get('recommendations', [RecommendationController::class, 'index']);
 Route::get('recommendations/{letter}', [RecommendationController::class, 'show']);
 Route::post('recommendations/{letter}/approve', [RecommendationController::class, 'approve']);
 Route::post('recommendations/{letter}/reject', [RecommendationController::class, 'reject']);
+
+// Sick Days
+Route::get('sick-days', [SickDayController::class, 'index']);
+Route::patch('sick-days/{sickDay}/review', [SickDayController::class, 'review']);
+
+// Public Holidays
+Route::apiResource('public-holidays', PublicHolidayController::class)->except(['show']);
+
+// Notifications
+Route::get('notifications', [NotificationController::class, 'index']);
+Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead']);

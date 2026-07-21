@@ -7,6 +7,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Console\Commands\ArchiveCompletedInternshipsCommand;
+use App\Console\Commands\GenerateWeeklyReportsCommand;
+use App\Console\Commands\UpdateOverdueTasksCommand;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -30,13 +34,21 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
 
-        // Recalculate performance metrics for all interns every night at midnight
+        // Performance recalculation — every night at midnight
         $schedule->command(RecalculatePerformanceCommand::class)->dailyAt('00:00');
-
-        // Check and award achievements after performance is recalculated
-        // Runs at 1am so performance metrics are always fresh first
+    
+        // Achievement checks — after performance recalculation
         $schedule->command(CheckAchievementsCommand::class)->dailyAt('01:00');
-
+    
+        // Archive completed internships — nightly at 2am
+        $schedule->command(ArchiveCompletedInternshipsCommand::class)->dailyAt('02:00');
+    
+        // Flag overdue tasks — every morning at 6am
+        $schedule->command(UpdateOverdueTasksCommand::class)->dailyAt('06:00');
+    
+        // Weekly report — every Monday at 7am
+        $schedule->command(GenerateWeeklyReportsCommand::class)->weeklyOn(1, '07:00');
+    
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

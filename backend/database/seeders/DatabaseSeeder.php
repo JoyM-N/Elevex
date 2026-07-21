@@ -27,6 +27,13 @@ class DatabaseSeeder extends Seeder
             AchievementSeeder::class,
         ]);
 
+        $this->call([
+            SuperAdminSeeder::class,
+            SkillSeeder::class,
+            AchievementSeeder::class,
+            PublicHolidaySeeder::class, // ← add this line
+        ]);
+
         // Demo data — only in development
         // Remove DemoSeeder from this list before deploying to production
         if (app()->environment('local')) {

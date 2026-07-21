@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\Intern\DashboardController;
 use App\Http\Controllers\Api\Intern\LogbookController;
+use App\Http\Controllers\Api\Intern\NotificationController;
 use App\Http\Controllers\Api\Intern\PerformanceController;
 use App\Http\Controllers\Api\Intern\RecommendationController;
+use App\Http\Controllers\Api\Intern\SickDayController;
 use App\Http\Controllers\Api\Intern\SkillController;
 use App\Http\Controllers\Api\Intern\TaskController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Intern\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +16,7 @@ use App\Http\Controllers\Api\Intern\DashboardController;
 |--------------------------------------------------------------------------
 */
 
+// Dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
 
 // Tasks
@@ -43,3 +46,13 @@ Route::get('recommendations', [RecommendationController::class, 'index']);
 Route::post('recommendations', [RecommendationController::class, 'store']);
 Route::get('recommendations/{letter}', [RecommendationController::class, 'show']);
 Route::get('recommendations/{letter}/download', [RecommendationController::class, 'download']);
+
+// Sick Days
+Route::get('sick-days', [SickDayController::class, 'index']);
+Route::post('sick-days', [SickDayController::class, 'store']);
+
+// Notifications
+Route::get('notifications', [NotificationController::class, 'index']);
+Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
