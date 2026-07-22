@@ -88,3 +88,33 @@ export async function resetPassword(data: ResetPasswordFormData): Promise<void> 
 export async function changePassword(data: ChangePasswordFormData): Promise<void> {
   await apiClient.put('/v1/auth/password', data)
 }
+
+/**
+ * Update own profile (name, phone).
+ */
+export async function updateProfile(data: {
+  name: string
+  phone?: string | null
+}): Promise<User> {
+  const response = await apiClient.put<ApiResponse<User>>('/v1/auth/profile', {
+    name: data.name,
+    phone: data.phone || null,
+  })
+  return response.data.data
+}
+
+/**
+ * Upload avatar image (multipart).
+ */
+export async function uploadAvatar(file: File): Promise<User> {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  const response = await apiClient.post<ApiResponse<User>>(
+    '/v1/auth/avatar',
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }
+  )
+  return response.data.data
+}

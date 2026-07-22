@@ -51,8 +51,10 @@ class AuthController extends Controller
   
     public function user(Request $request): JsonResponse
     {
+        $user = $request->user()->loadMissing('activeInternship');
+
         return $this->success(
-            data: new UserResource($request->user()),
+            data: new UserResource($user),
             message: 'User retrieved successfully.'
         );
     }

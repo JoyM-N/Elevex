@@ -25,8 +25,10 @@ use Illuminate\Support\Facades\Route;
 // Dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
 
-// Intern directory (pickers)
+// Intern directory + onboarding
 Route::get('interns', [InternController::class, 'index']);
+Route::post('interns', [InternController::class, 'store']);
+Route::get('interns/{user}', [InternController::class, 'show']);
 
 // Projects
 Route::apiResource('projects', ProjectController::class);

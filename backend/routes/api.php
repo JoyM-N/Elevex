@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -39,6 +40,12 @@ Route::prefix('v1')->group(function () {
 
             Route::put('password', [AuthController::class, 'changePassword'])
                 ->name('password.change');
+
+            Route::put('profile', [ProfileController::class, 'update'])
+                ->name('profile.update');
+
+            Route::post('avatar', [ProfileController::class, 'uploadAvatar'])
+                ->name('avatar.upload');
         });
     });
 

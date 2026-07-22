@@ -36,7 +36,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
-/** Super-admin only — Phase 11.11 will flesh these out */
+/** Super-admin only — admin account management */
 export const superAdminNavItems: NavItem[] = [
   {
     title: 'Admins',

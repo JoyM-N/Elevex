@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\SuperAdmin\AdminController;
 use Illuminate\Support\Facades\Route;
 
-// Placeholder — Super Admin routes added per phase as features are built
 Route::get('/dashboard', function () {
     return response()->json([
         'success' => true,
@@ -10,3 +10,7 @@ Route::get('/dashboard', function () {
         'data'    => [],
     ]);
 });
+
+// Admin account management
+Route::get('admins', [AdminController::class, 'index']);
+Route::post('admins', [AdminController::class, 'store']);

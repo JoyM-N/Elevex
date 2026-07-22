@@ -27,6 +27,7 @@ export interface User {
   email_verified: boolean
   team_role?: string | null
   active_internship?: Internship | null
+  internships?: Internship[]
   created_at: string
 }
 
@@ -46,9 +47,9 @@ export interface Internship {
   status: InternshipStatus
   notes: string | null
   user?: User
-  supervisor?: User
-  created_at: string
-  updated_at: string
+  supervisor?: Pick<User, 'id' | 'name' | 'email'> | User | null
+  created_at?: string
+  updated_at?: string
 }
 
 // ============================================================
@@ -303,6 +304,99 @@ export interface RecommendationLetter {
   internship?: Internship
   approved_by?: User
   created_at: string
+}
+
+// ============================================================
+// Reports (generated on demand — not Eloquent resources)
+// ============================================================
+
+export interface WeeklyReport {
+  period: {
+    start: string
+    end: string
+    label: string
+  }
+  summary: {
+    total_tasks: number
+    completed_tasks: number
+    overdue_tasks: number
+    total_logbooks: number
+    approved_logbooks: number
+    total_hours: number
+  }
+  interns: Array<{
+    id: number
+    name: string
+    email?: string
+    tasks_this_week?: number
+    logbooks_this_week?: number
+  }>
+  generated_at: string
+  pdf_url: string
+}
+
+export interface MonthlyReport {
+  period: {
+    year: number
+    month: number
+    label: string
+    start: string
+    end: string
+  }
+  projects: {
+    active: number
+    completed: number
+  }
+  tasks: {
+    total: number
+    completed: number
+    overdue: number
+    completion_rate: number
+  }
+  logbooks: {
+    total: number
+    approved: number
+    approval_rate: number
+    total_hours: number
+  }
+  top_performers: Array<{
+    id: number
+    overall_score: number
+    grade?: string
+    user?: User | { id: number; name: string; email?: string }
+  }>
+  interns: Array<{
+    id: number
+    name: string
+    email?: string
+    tasks_this_month?: number
+    logbooks_this_month?: number
+  }>
+  generated_at: string
+  pdf_url: string
+}
+
+export interface PerformanceReport {
+  intern: User | { id: number; name: string; email?: string }
+  metric: PerformanceMetric | null
+  grade: string
+  task_stats: {
+    total: number
+    completed: number
+    in_progress: number
+    overdue: number
+  }
+  logbook_stats: {
+    total: number
+    approved: number
+    pending: number
+    draft: number
+  }
+  projects: Array<{ id: number; name: string; status?: string }>
+  achievements: Achievement[]
+  skills: Skill[]
+  generated_at: string
+  pdf_url: string
 }
 
 // ============================================================

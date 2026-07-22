@@ -3,42 +3,70 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\OnboardInternRequest;
 use App\Http\Resources\V1\UserResource;
-use App\Models\User;
+use App\Services\UserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Minimal intern directory for admin pickers (e.g. project members).
+ * InternController
+ *
+ * Intern directory, profile view, and onboarding.
  */
 class InternController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private readonly UserService $userService
+    ) {}
 
     /**
      * GET /api/v1/admin/interns
      */
     public function index(Request $request): JsonResponse
     {
-        $query = User::query()
-            ->where('role', 'intern')
-            ->where('is_active', true)
-            ->with('activeInternship')
-            ->orderBy('name');
-
-        if ($search = $request->string('search')->toString()) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        $interns = $query->paginate($request->integer('per_page', 50));
+        $interns = $this->userService->getInterns(
+            filters: $request->only(['search', 'is_active']),
+            perPage: $request->integer('per_page', 50)
+        );
 
         return $this->paginated(
             UserResource::collection($interns),
             'Interns retrieved successfully.'
+        );
+    }
+
+    /**
+     * GET /api/v1/admin/interns/{user}
+     */
+    public function show(Request $request, int $user): JsonResponse
+    {
+        $intern = $this->userService->getInternById($user);
+
+        $this->authorize('view', $intern);
+
+        return $this->success(
+            new UserResource($intern),
+            'Intern retrieved successfully.'
+        );
+    }
+
+    /**
+     * POST /api/v1/admin/interns
+     */
+    public function store(OnboardInternRequest $request): JsonResponse
+    {
+        $intern = $this->userService->onboardIntern(
+            data: $request->validated(),
+            actingAdmin: $request->user()
+        );
+
+        return $this->created(
+            new UserResource($intern),
+            'Intern onboarded successfully.'
         );
     }
 }

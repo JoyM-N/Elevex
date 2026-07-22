@@ -31,6 +31,18 @@ class UserResource extends JsonResource
                     return null;
                 }
 
+                $supervisor = null;
+                if (
+                    $this->activeInternship->relationLoaded('supervisor')
+                    && $this->activeInternship->supervisor
+                ) {
+                    $supervisor = [
+                        'id'    => $this->activeInternship->supervisor->id,
+                        'name'  => $this->activeInternship->supervisor->name,
+                        'email' => $this->activeInternship->supervisor->email,
+                    ];
+                }
+
                 return [
                     'id'         => $this->activeInternship->id,
                     'department' => $this->activeInternship->department,
@@ -40,7 +52,32 @@ class UserResource extends JsonResource
                     'end_date'   => $this->activeInternship->end_date->toDateString(),
                     'status'     => $this->activeInternship->status->value,
                     'notes'      => $this->activeInternship->notes,
+                    'supervisor' => $supervisor,
                 ];
+            }),
+            'internships' => $this->whenLoaded('internships', function () {
+                return $this->internships->map(function ($internship) {
+                    $supervisor = null;
+                    if ($internship->relationLoaded('supervisor') && $internship->supervisor) {
+                        $supervisor = [
+                            'id'    => $internship->supervisor->id,
+                            'name'  => $internship->supervisor->name,
+                            'email' => $internship->supervisor->email,
+                        ];
+                    }
+
+                    return [
+                        'id'         => $internship->id,
+                        'department' => $internship->department,
+                        'university' => $internship->university,
+                        'student_id' => $internship->student_id,
+                        'start_date' => $internship->start_date->toDateString(),
+                        'end_date'   => $internship->end_date->toDateString(),
+                        'status'     => $internship->status->value,
+                        'notes'      => $internship->notes,
+                        'supervisor' => $supervisor,
+                    ];
+                })->values();
             }),
             'created_at'     => $this->created_at->toISOString(),
         ];

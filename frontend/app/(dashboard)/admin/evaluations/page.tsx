@@ -1,10 +1,12 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { listEvaluations } from '@/lib/api/admin/performance'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -16,10 +18,33 @@ import {
 } from '@/components/ui/table'
 
 export default function AdminEvaluationsPage() {
+  const [search, setSearch] = useState('')
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', 'evaluations'],
     queryFn: () => listEvaluations(),
   })
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return data ?? []
+
+    return (data ?? []).filter((evaluation) => {
+      const intern = evaluation.user
+      const evaluator = evaluation.evaluated_by
+      const haystack = [
+        intern?.name,
+        intern?.email,
+        evaluator?.name,
+        evaluator?.email,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return haystack.includes(q)
+    })
+  }, [data, search])
 
   return (
     <div className="page-enter space-y-6">
@@ -41,6 +66,16 @@ export default function AdminEvaluationsPage() {
         </Button>
       </div>
 
+      <div className="relative max-w-sm">
+        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by intern or evaluator…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
+      </div>
+
       {isLoading ? (
         <Skeleton className="h-64 w-full rounded-xl" />
       ) : isError ? (
@@ -54,6 +89,13 @@ export default function AdminEvaluationsPage() {
         <div className="rounded-xl bg-card px-6 py-16 text-center ring-1 ring-border/80">
           <p className="font-heading text-lg font-semibold">No evaluations yet</p>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl bg-card px-6 py-16 text-center ring-1 ring-border/80">
+          <p className="font-heading text-lg font-semibold">No matches</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try another intern or evaluator name.
+          </p>
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-xl bg-card ring-1 ring-border/80">
           <Table>
@@ -66,7 +108,7 @@ export default function AdminEvaluationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(data ?? []).map((evaluation) => (
+              {filtered.map((evaluation) => (
                 <TableRow key={evaluation.id} className="hover:bg-muted/40">
                   <TableCell>
                     <Link

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 import { listInterns } from '@/lib/api/admin/projects'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,21 +36,28 @@ export default function AdminInternsPage() {
 
   return (
     <div className="page-enter space-y-6">
-      <div>
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">
-          Interns
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Performance, achievements, and skills by intern
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
+            Interns
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Profiles, onboarding, performance, and skills
+          </p>
+        </div>
+        <Button
+          render={<Link href="/admin/interns/new" />}
+          className="gap-1"
+        >
+          <Plus className="size-4" />
+          Onboard intern
+        </Button>
       </div>
 
       <Input
         placeholder="Search interns…"
         value={search}
-        onChange={(e) => {
-          setSearch(e.target.value)
-        }}
+        onChange={(e) => setSearch(e.target.value)}
         className="max-w-xs"
       />
 
@@ -60,6 +68,16 @@ export default function AdminInternsPage() {
           <p className="font-medium">Couldn&apos;t load interns</p>
           <Button variant="outline" className="mt-3" onClick={() => refetch()}>
             Retry
+          </Button>
+        </div>
+      ) : (data?.data ?? []).length === 0 ? (
+        <div className="rounded-xl bg-card px-6 py-16 text-center ring-1 ring-border/80">
+          <p className="font-heading text-lg font-semibold">No interns yet</p>
+          <Button
+            className="mt-4"
+            render={<Link href="/admin/interns/new" />}
+          >
+            Onboard the first intern
           </Button>
         </div>
       ) : (
@@ -76,7 +94,12 @@ export default function AdminInternsPage() {
               {(data?.data ?? []).map((intern) => (
                 <TableRow key={intern.id} className="hover:bg-muted/40">
                   <TableCell>
-                    <p className="font-medium">{intern.name}</p>
+                    <Link
+                      href={`/admin/interns/${intern.id}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {intern.name}
+                    </Link>
                     <p className="text-xs text-muted-foreground">
                       {intern.email}
                     </p>
@@ -92,21 +115,21 @@ export default function AdminInternsPage() {
                         variant="outline"
                         size="sm"
                         render={
+                          <Link href={`/admin/interns/${intern.id}`} />
+                        }
+                      >
+                        Profile
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        render={
                           <Link
                             href={`/admin/interns/${intern.id}/performance`}
                           />
                         }
                       >
                         Performance
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        render={
-                          <Link href={`/admin/interns/${intern.id}/skills`} />
-                        }
-                      >
-                        Skills
                       </Button>
                     </div>
                   </TableCell>
