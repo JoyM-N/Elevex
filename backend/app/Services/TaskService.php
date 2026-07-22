@@ -32,7 +32,7 @@ class TaskService
         ?User $scopeToUser = null
     ): LengthAwarePaginator {
         return Task::query()
-            ->with(['assignedTo', 'createdBy', 'milestone'])
+            ->with(['assignedTo', 'createdBy', 'milestone.project'])
             ->when($scopeToUser, function ($query) use ($scopeToUser) {
                 // Scope to only tasks assigned to this intern
                 $query->where('assigned_to', $scopeToUser->id);
@@ -70,13 +70,18 @@ class TaskService
     /**
      * Create a new task.
      * Sets created_by to the authenticated admin.
+     * Status defaults to To Do — must be set on the model (DB default
+     * alone is not hydrated into the in-memory instance after create).
      */
     public function createTask(array $data, User $admin): Task
     {
-        return Task::create([
+        $task = Task::create([
             ...$data,
+            'status'     => $data['status'] ?? TaskStatus::Todo,
             'created_by' => $admin->id,
         ]);
+
+        return $task->fresh(['assignedTo', 'createdBy', 'milestone.project']);
     }
 
     /**

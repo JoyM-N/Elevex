@@ -16,7 +16,9 @@ class CompleteTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('complete', $this->route('task'));
+        $task = \App\Models\Task::findOrFail($this->route('task'));
+
+        return $this->user()->can('complete', $task);
     }
 
     public function rules(): array

@@ -22,6 +22,10 @@ class MilestoneResource extends JsonResource
 
             // Only included when relationship is loaded
             'tasks' => TaskResource::collection($this->whenLoaded('tasks')),
+            'project' => $this->whenLoaded('project', fn () => [
+                'id'    => $this->project->id,
+                'title' => $this->project->title,
+            ]),
 
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),

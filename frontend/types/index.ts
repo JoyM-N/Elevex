@@ -97,6 +97,7 @@ export interface Milestone {
   is_overdue: boolean
   completion_percentage: number
   tasks?: Task[]
+  project?: { id: number; title: string }
   created_at: string
   updated_at: string
 }
