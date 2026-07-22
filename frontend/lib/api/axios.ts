@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearSessionHint } from '@/lib/auth/session-hint'
 
 /**
  * Axios Instance
@@ -22,20 +23,49 @@ const apiClient = axios.create({
   },
 })
 
+const AUTH_PAGE_PREFIXES = ['/login', '/forgot-password', '/reset-password']
+
+let clearingSession = false
+
+async function clearStaleSessionCookies() {
+  if (clearingSession) return
+  clearingSession = true
+  clearSessionHint()
+  try {
+    await fetch('/api/auth/clear-session', {
+      method: 'POST',
+      credentials: 'include',
+    })
+  } catch {
+    // Best-effort — still continue with reject/redirect
+  } finally {
+    clearingSession = false
+  }
+}
+
+function shouldHardRedirectOn401(): boolean {
+  if (typeof window === 'undefined') return false
+
+  const path = window.location.pathname
+  if (path === '/') return false
+  if (AUTH_PAGE_PREFIXES.some((prefix) => path.startsWith(prefix))) return false
+
+  return true
+}
+
 /**
  * Response interceptor
  *
- * Handles global error responses:
- *   401 — redirect to login (session expired)
- *   403 — redirect to dashboard (unauthorized)
- *   500 — log server errors
+ * 401 → clear stale cookies, then hard-redirect away from protected pages.
+ * Skips home/auth pages so callers can soft-navigate without looping.
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Session expired — redirect to login
-      if (typeof window !== 'undefined') {
+      await clearStaleSessionCookies()
+
+      if (shouldHardRedirectOn401()) {
         window.location.href = '/login'
       }
     }

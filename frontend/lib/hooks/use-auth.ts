@@ -2,55 +2,72 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
 import apiClient from '@/lib/api/axios'
+import {
+  clearSessionHint,
+  shouldFetchAuthUser,
+} from '@/lib/auth/session-hint'
 import type { User, ApiResponse } from '@/types'
 
 /**
  * useAuth Hook
  *
- * Central authentication hook used across the entire app.
- *
- * Fetches the current user from GET /api/v1/auth/user.
- * If the request returns 401, the axios interceptor
- * redirects to /login automatically.
- *
- * Usage:
- *   const { user, isLoading, isAdmin, logout } = useAuth()
+ * Fetches GET /api/v1/auth/user when a session is expected.
+ * Skips the request on login/home when there is no session hint,
+ * so logged-out visits do not spam 401 in the console.
  */
 export function useAuth() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const enabled = shouldFetchAuthUser()
 
-  // Fetch current authenticated user
   const {
     data: user,
     isLoading,
     isError,
-  } = useQuery<User>({
+    isFetching,
+  } = useQuery<User | null>({
     queryKey: ['auth', 'user'],
+    enabled,
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<User>>('/v1/auth/user')
-      return response.data.data
+      try {
+        const response = await apiClient.get<ApiResponse<User>>('/v1/auth/user')
+        return response.data.data
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          clearSessionHint()
+          return null
+        }
+        throw error
+      }
     },
-    retry: false, // Don't retry on 401
-    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+    retry: false,
+    staleTime: 1000 * 60 * 10,
   })
 
-  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiClient.post('/v1/auth/logout')
     },
     onSuccess: () => {
-      // Clear all cached data on logout
+      clearSessionHint()
+      queryClient.clear()
+      router.push('/login')
+    },
+    onError: () => {
+      clearSessionHint()
       queryClient.clear()
       router.push('/login')
     },
   })
 
+  // When the query is disabled (logged-out public page), treat as settled
+  const loading = enabled && (isLoading || (isFetching && !user))
+
   return {
-    user,
-    isLoading,
+    user: user ?? undefined,
+    isLoading: loading,
     isError,
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === 'super_admin',

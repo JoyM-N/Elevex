@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +13,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { login } from '@/lib/api/auth'
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth'
+import { useAuth } from '@/lib/hooks/use-auth'
+import { getDashboardHome } from '@/lib/auth/roles'
+import { setSessionHint } from '@/lib/auth/session-hint'
 import type { User } from '@/types'
 import Link from 'next/link'
 
@@ -21,17 +24,21 @@ import Link from 'next/link'
  *
  * Handles user authentication.
  * On success — redirects to the correct dashboard based on role.
- * On failure — shows validation errors from Laravel.
- *
- * Role-based redirect:
- *   super_admin → /admin/dashboard
- *   admin       → /admin/dashboard
- *   intern      → /intern/dashboard
+ * If a valid session already exists, bounce to the role dashboard.
  */
 export default function LoginPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [showPassword, setShowPassword] = useState(false)
+  const bounced = useRef(false)
+
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (authLoading || bounced.current || !isAuthenticated || !user) return
+    bounced.current = true
+    router.replace(getDashboardHome(user.role))
+  }, [authLoading, isAuthenticated, user, router])
 
   const {
     register,
@@ -44,33 +51,42 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: (user: User) => {
-      // Cache the user data so dashboard doesn't need to refetch
-      queryClient.setQueryData(['auth', 'user'], user)
+    onSuccess: (loggedInUser: User) => {
+      setSessionHint()
+      queryClient.setQueryData(['auth', 'user'], loggedInUser)
 
-      toast.success(`Welcome back, ${user.name}!`)
+      toast.success(`Welcome back, ${loggedInUser.name}!`)
 
-      // Redirect based on role
-      if (user.role === 'intern') {
+      if (loggedInUser.role === 'intern') {
         router.push('/intern/dashboard')
       } else {
         router.push('/admin/dashboard')
       }
     },
-    onError: (error: any) => {
-      // Handle Laravel validation errors
-      const errors = error.response?.data?.errors
+    onError: (error: unknown) => {
+      const err = error as {
+        response?: { data?: { errors?: { email?: string[] }; message?: string } }
+      }
+      const apiErrors = err.response?.data?.errors
 
-      if (errors?.email) {
-        setError('email', { message: errors.email[0] })
+      if (apiErrors?.email) {
+        setError('email', { message: apiErrors.email[0] })
       } else {
-        toast.error(error.response?.data?.message || 'Login failed. Please try again.')
+        toast.error(err.response?.data?.message || 'Login failed. Please try again.')
       }
     },
   })
 
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data)
+  }
+
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -83,8 +99,6 @@ export default function LoginPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
-          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
             <Input
@@ -99,13 +113,12 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Password */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-primary hover:underline"
               >
                 Forgot password?
               </Link>
@@ -121,7 +134,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -135,7 +148,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Submit */}
           <Button
             type="submit"
             className="w-full"
@@ -150,7 +162,6 @@ export default function LoginPage() {
               'Sign in'
             )}
           </Button>
-
         </form>
       </CardContent>
     </Card>
