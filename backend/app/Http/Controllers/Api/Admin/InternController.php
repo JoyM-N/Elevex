@@ -24,6 +24,7 @@ class InternController extends Controller
         $query = User::query()
             ->where('role', 'intern')
             ->where('is_active', true)
+            ->with('activeInternship')
             ->orderBy('name');
 
         if ($search = $request->string('search')->toString()) {

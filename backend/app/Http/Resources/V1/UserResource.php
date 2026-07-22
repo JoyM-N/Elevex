@@ -26,6 +26,22 @@ class UserResource extends JsonResource
                 $this->pivot?->team_role !== null,
                 $this->pivot?->team_role
             ),
+            'active_internship' => $this->whenLoaded('activeInternship', function () {
+                if (!$this->activeInternship) {
+                    return null;
+                }
+
+                return [
+                    'id'         => $this->activeInternship->id,
+                    'department' => $this->activeInternship->department,
+                    'university' => $this->activeInternship->university,
+                    'student_id' => $this->activeInternship->student_id,
+                    'start_date' => $this->activeInternship->start_date->toDateString(),
+                    'end_date'   => $this->activeInternship->end_date->toDateString(),
+                    'status'     => $this->activeInternship->status->value,
+                    'notes'      => $this->activeInternship->notes,
+                ];
+            }),
             'created_at'     => $this->created_at->toISOString(),
         ];
     }

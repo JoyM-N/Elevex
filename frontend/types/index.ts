@@ -25,6 +25,8 @@ export interface User {
   avatar_url: string | null
   is_active: boolean
   email_verified: boolean
+  team_role?: string | null
+  active_internship?: Internship | null
   created_at: string
 }
 

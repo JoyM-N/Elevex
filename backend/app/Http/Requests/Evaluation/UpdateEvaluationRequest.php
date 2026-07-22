@@ -14,7 +14,12 @@ class UpdateEvaluationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->route('evaluation'));
+        $evaluation = $this->route('evaluation');
+        $evaluation = $evaluation instanceof \App\Models\Evaluation
+            ? $evaluation
+            : \App\Models\Evaluation::query()->findOrFail($evaluation);
+
+        return $this->user()->can('update', $evaluation);
     }
 
     public function rules(): array
