@@ -48,6 +48,7 @@ export const superAdminNavItems: NavItem[] = [
 
 export const internNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/intern/dashboard', icon: LayoutDashboard },
+  { title: 'Projects', href: '/intern/projects', icon: FolderKanban },
   { title: 'Tasks', href: '/intern/tasks', icon: ListTodo },
   { title: 'Logbooks', href: '/intern/logbooks', icon: BookOpen },
   { title: 'Performance', href: '/intern/performance', icon: Trophy },

@@ -68,11 +68,16 @@ export interface Project {
   end_date: string
   is_locked: boolean
   days_until_deadline: number
+  my_team_role?: string | null
   created_by?: User
-  members?: User[]
+  members?: ProjectMember[]
   milestones?: Milestone[]
   created_at: string
   updated_at: string
+}
+
+export type ProjectMember = User & {
+  team_role?: string | null
 }
 
 // ============================================================

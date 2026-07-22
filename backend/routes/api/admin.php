@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\EvaluationController;
+use App\Http\Controllers\Api\Admin\InternController;
 use App\Http\Controllers\Api\Admin\LogbookController;
 use App\Http\Controllers\Api\Admin\MilestoneController;
 use App\Http\Controllers\Api\Admin\NotificationController;
@@ -23,6 +24,9 @@ use Illuminate\Support\Facades\Route;
 
 // Dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
+
+// Intern directory (pickers)
+Route::get('interns', [InternController::class, 'index']);
 
 // Projects
 Route::apiResource('projects', ProjectController::class);

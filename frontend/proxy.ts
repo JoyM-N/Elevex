@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Next.js Middleware
+ * Next.js Proxy (formerly Middleware)
  *
  * Cookie-only edge guard (cannot know role or validity here).
  *
@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * elevex-api-session would otherwise loop: / → 401 → /login → /.
  * Valid sessions are redirected from auth pages by the login page client.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const sessionCookie =

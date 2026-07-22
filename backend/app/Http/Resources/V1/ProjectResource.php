@@ -22,6 +22,12 @@ class ProjectResource extends JsonResource
             'is_locked'   => $this->isLocked(),
             'days_until_deadline' => $this->daysUntilDeadline(),
 
+            // Present when loaded via belongsToMany (intern list) or set on show
+            'my_team_role' => $this->when(
+                $this->pivot?->team_role !== null || $this->my_team_role !== null,
+                $this->pivot?->team_role ?? $this->my_team_role
+            ),
+
             // Only included when relationship is loaded
             // e.g. Project::with('createdBy')->get()
             'created_by'  => new UserResource($this->whenLoaded('createdBy')),

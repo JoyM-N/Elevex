@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Intern\DashboardController;
 use App\Http\Controllers\Api\Intern\LogbookController;
 use App\Http\Controllers\Api\Intern\NotificationController;
 use App\Http\Controllers\Api\Intern\PerformanceController;
+use App\Http\Controllers\Api\Intern\ProjectController;
 use App\Http\Controllers\Api\Intern\RecommendationController;
 use App\Http\Controllers\Api\Intern\SickDayController;
 use App\Http\Controllers\Api\Intern\SkillController;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 
 // Dashboard
 Route::get('dashboard', [DashboardController::class, 'index']);
+
+// Projects (read-only)
+Route::get('projects', [ProjectController::class, 'index']);
+Route::get('projects/{project}', [ProjectController::class, 'show']);
 
 // Tasks
 Route::get('tasks', [TaskController::class, 'index']);

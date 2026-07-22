@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 /**
  * Clears Sanctum/session cookies that may be stale.
- * Used after a 401 so middleware stops treating the user as authenticated.
+ * Used after a 401 so the proxy stops treating the user as authenticated.
  */
 export async function POST() {
   const response = NextResponse.json({ success: true })

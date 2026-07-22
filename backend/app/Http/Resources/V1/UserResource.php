@@ -22,6 +22,10 @@ class UserResource extends JsonResource
                                     : null,
             'is_active'      => $this->is_active,
             'email_verified' => !is_null($this->email_verified_at),
+            'team_role'      => $this->when(
+                $this->pivot?->team_role !== null,
+                $this->pivot?->team_role
+            ),
             'created_at'     => $this->created_at->toISOString(),
         ];
     }
