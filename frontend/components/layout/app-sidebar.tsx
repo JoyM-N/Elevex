@@ -94,7 +94,7 @@ export function AppSidebar() {
               Elevex
             </span>
             <span className="truncate text-[11px] text-muted-foreground">
-              Internship OS
+              {user?.role === 'intern' ? 'Intern portal' : 'Internship OS'}
             </span>
           </div>
         </Link>

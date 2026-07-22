@@ -333,3 +333,123 @@ export interface ApiError {
   message: string
   errors?: Record<string, string[]>
 }
+
+// ============================================================
+// Admin Dashboard (GET /v1/admin/dashboard)
+// ============================================================
+
+export type ProjectStatusKey =
+  | 'planning'
+  | 'active'
+  | 'on_hold'
+  | 'completed'
+  | 'cancelled'
+
+export interface AdminDashboardTopPerformer {
+  name: string
+  overall_score: number
+  grade: PerformanceGrade
+}
+
+export interface AdminDashboardPendingLogbook {
+  id: number
+  intern_name: string
+  task_title: string
+  date: string
+  submitted_at: string
+}
+
+export interface AdminDashboardRecentTask {
+  id: number
+  title: string
+  status: TaskStatus
+  assigned_to: string
+  deadline: string | null
+}
+
+export interface AdminDashboard {
+  interns: {
+    total: number
+    active: number
+  }
+  projects: {
+    total: number
+    active: number
+    by_status: Partial<Record<ProjectStatusKey, number>>
+  }
+  tasks: {
+    due_this_week: number
+    overdue: number
+  }
+  logbooks: {
+    pending_review: number
+    approved_today: number
+  }
+  top_performer: AdminDashboardTopPerformer | null
+  pending_logbooks: AdminDashboardPendingLogbook[]
+  recent_tasks: AdminDashboardRecentTask[]
+}
+
+// ============================================================
+// Intern Dashboard (GET /v1/intern/dashboard)
+// ============================================================
+
+export type TeamRoleKey =
+  | 'frontend'
+  | 'backend'
+  | 'full_stack'
+  | 'devops'
+  | 'design'
+  | 'qa'
+  | 'documentation'
+  | 'solo'
+
+export interface InternDashboardPerformance {
+  overall_score: number | string
+  grade: PerformanceGrade
+  completion_rate: number | string
+  deadline_score: number | string
+  consistency_score: number | string
+}
+
+export interface InternDashboardAchievement {
+  name: string
+  icon: string | null
+  awarded_at: string
+}
+
+export interface InternDashboardActiveProject {
+  id: number
+  title: string
+  team_role: TeamRoleKey | string
+  end_date: string
+}
+
+export interface InternDashboardDeadline {
+  id: number
+  title: string
+  deadline: string
+  priority: TaskPriority
+  status: TaskStatus
+}
+
+export interface InternDashboard {
+  tasks: {
+    total: number
+    completed: number
+    in_progress: number
+    overdue: number
+    completion_rate: number
+  }
+  logbooks: {
+    total: number
+    approved: number
+    draft: number
+    hours_this_week: number
+  }
+  performance: InternDashboardPerformance | null
+  recent_achievements: InternDashboardAchievement[]
+  active_projects: InternDashboardActiveProject[]
+  upcoming_deadlines: InternDashboardDeadline[]
+}
+

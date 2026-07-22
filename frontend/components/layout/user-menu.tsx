@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -48,35 +49,41 @@ export function UserMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="min-w-56 w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">
-              {user?.name}
-            </span>
-            <span className="text-xs text-muted-foreground">{user?.email}</span>
-            <span className="mt-1 w-fit rounded-md bg-accent/70 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">
-              {user?.role_label}
-            </span>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-foreground">
+                {user?.name}
+              </span>
+              <span className="text-xs text-muted-foreground">{user?.email}</span>
+              <span className="mt-1 w-fit rounded-md bg-accent/70 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">
+                {user?.role_label}
+              </span>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href={profileHref} />}>
-          <UserRound />
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={passwordHref} />}>
-          <KeyRound />
-          Change password
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem render={<Link href={profileHref} />}>
+            <UserRound />
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href={passwordHref} />}>
+            <KeyRound />
+            Change password
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          disabled={isLoggingOut}
-          onClick={() => logout()}
-        >
-          <LogOut />
-          {isLoggingOut ? 'Signing out…' : 'Sign out'}
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={isLoggingOut}
+            onClick={() => logout()}
+          >
+            <LogOut />
+            {isLoggingOut ? 'Signing out…' : 'Sign out'}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

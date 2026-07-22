@@ -13,8 +13,8 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -88,9 +88,7 @@ export function NotificationBell() {
 
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-3 py-2.5">
-          <DropdownMenuLabel className="p-0 text-sm font-semibold">
-            Notifications
-          </DropdownMenuLabel>
+          <p className="text-sm font-semibold text-foreground">Notifications</p>
           {unreadCount > 0 ? (
             <button
               type="button"
@@ -115,33 +113,35 @@ export function NotificationBell() {
               You&apos;re all caught up.
             </p>
           ) : (
-            notifications.map((n) => (
-              <DropdownMenuItem
-                key={n.id}
-                className={cn(
-                  'cursor-pointer items-start gap-2 rounded-none px-3 py-2.5',
-                  !n.read && 'bg-primary/5'
-                )}
-                onClick={() => {
-                  if (!n.read) markRead.mutate(n.id)
-                }}
-              >
-                <span
+            <DropdownMenuGroup>
+              {notifications.map((n) => (
+                <DropdownMenuItem
+                  key={n.id}
                   className={cn(
-                    'mt-1.5 size-1.5 shrink-0 rounded-full',
-                    n.read ? 'bg-transparent' : 'bg-accent'
+                    'cursor-pointer items-start gap-2 rounded-none px-3 py-2.5',
+                    !n.read && 'bg-primary/5'
                   )}
-                />
-                <div className="min-w-0 flex-1 space-y-0.5">
-                  <p className="text-sm leading-snug text-foreground">
-                    {n.message}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {formatRelative(n.created_at)}
-                  </p>
-                </div>
-              </DropdownMenuItem>
-            ))
+                  onClick={() => {
+                    if (!n.read) markRead.mutate(n.id)
+                  }}
+                >
+                  <span
+                    className={cn(
+                      'mt-1.5 size-1.5 shrink-0 rounded-full',
+                      n.read ? 'bg-transparent' : 'bg-accent'
+                    )}
+                  />
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <p className="text-sm leading-snug text-foreground">
+                      {n.message}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {formatRelative(n.created_at)}
+                    </p>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
           )}
         </div>
       </DropdownMenuContent>
