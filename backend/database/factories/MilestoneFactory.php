@@ -28,8 +28,17 @@ class MilestoneFactory extends Factory
 
         return [
             'project_id'  => Project::factory(),
-            'title'       => fake()->sentence(3),
-            'description' => fake()->paragraph(),
+            'title'       => fake()->randomElement([
+                'Discovery and planning',
+                'Core feature build',
+                'Quality and polish',
+                'Launch readiness',
+            ]),
+            'description' => fake()->randomElement([
+                'Define scope, owners, and success criteria before implementation starts.',
+                'Deliver the main features needed for an usable internal release.',
+                'Tighten edge cases, copy, and performance before handoff.',
+            ]),
             'start_date'  => $startDate,
             'end_date'    => $endDate,
             'status'      => 'pending',

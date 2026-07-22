@@ -76,6 +76,12 @@ export default function AdminInternProfilePage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
+              size="sm"
+              render={<Link href={`/admin/interns/${intern.id}/edit`} />}
+            >
+              Edit
+            </Button>
+            <Button
               variant="outline"
               size="sm"
               render={

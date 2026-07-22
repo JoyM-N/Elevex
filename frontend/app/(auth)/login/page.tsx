@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,34 +11,47 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { login } from '@/lib/api/auth'
+import { login, logout as apiLogout } from '@/lib/api/auth'
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { getDashboardHome } from '@/lib/auth/roles'
-import { setSessionHint } from '@/lib/auth/session-hint'
+import {
+  clearSessionHint,
+  setSessionHint,
+} from '@/lib/auth/session-hint'
 import type { User } from '@/types'
 import Link from 'next/link'
+
+async function clearBrowserSession() {
+  try {
+    await apiLogout()
+  } catch {
+    // May already be logged out
+  }
+  try {
+    await fetch('/api/auth/clear-session', {
+      method: 'POST',
+      credentials: 'include',
+    })
+  } catch {
+    // Best-effort cookie clear
+  }
+  clearSessionHint()
+}
 
 /**
  * Login Page
  *
- * Handles user authentication.
- * On success — redirects to the correct dashboard based on role.
- * If a valid session already exists, bounce to the role dashboard.
+ * Does not auto-bounce an existing session — that trapped users who were
+ * still logged in as an intern and could not switch to admin.
  */
 export default function LoginPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [showPassword, setShowPassword] = useState(false)
-  const bounced = useRef(false)
+  const [switchingAccount, setSwitchingAccount] = useState(false)
 
   const { user, isLoading: authLoading, isAuthenticated } = useAuth()
-
-  useEffect(() => {
-    if (authLoading || bounced.current || !isAuthenticated || !user) return
-    bounced.current = true
-    router.replace(getDashboardHome(user.role))
-  }, [authLoading, isAuthenticated, user, router])
 
   const {
     register,
@@ -50,18 +63,19 @@ export default function LoginPage() {
   })
 
   const loginMutation = useMutation({
-    mutationFn: login,
+    mutationFn: async (data: LoginFormData) => {
+      // Drop any previous Sanctum session so role cannot stick from last login
+      await clearBrowserSession()
+      queryClient.setQueryData(['auth', 'user'], null)
+      return login(data)
+    },
     onSuccess: (loggedInUser: User) => {
       setSessionHint()
       queryClient.setQueryData(['auth', 'user'], loggedInUser)
+      setSwitchingAccount(false)
 
       toast.success(`Welcome back, ${loggedInUser.name}!`)
-
-      if (loggedInUser.role === 'intern') {
-        router.push('/intern/dashboard')
-      } else {
-        router.push('/admin/dashboard')
-      }
+      router.replace(getDashboardHome(loggedInUser.role))
     },
     onError: (error: unknown) => {
       const err = error as {
@@ -77,15 +91,64 @@ export default function LoginPage() {
     },
   })
 
+  const switchAccountMutation = useMutation({
+    mutationFn: clearBrowserSession,
+    onSuccess: () => {
+      queryClient.setQueryData(['auth', 'user'], null)
+      setSwitchingAccount(true)
+    },
+    onError: () => {
+      queryClient.setQueryData(['auth', 'user'], null)
+      setSwitchingAccount(true)
+    },
+  })
+
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data)
   }
 
-  if (authLoading || isAuthenticated) {
+  if (authLoading && !switchingAccount) {
     return (
       <div className="flex justify-center py-12">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
+    )
+  }
+
+  if (isAuthenticated && user && !switchingAccount) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Already signed in</CardTitle>
+          <CardDescription>
+            You are signed in as <strong>{user.email}</strong> ({user.role_label}).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <Button
+            className="w-full"
+            onClick={() => router.replace(getDashboardHome(user.role))}
+          >
+            Continue to dashboard
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={switchAccountMutation.isPending}
+            onClick={() => switchAccountMutation.mutate()}
+          >
+            {switchAccountMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing out...
+              </>
+            ) : (
+              'Use a different account'
+            )}
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -104,7 +167,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="admin@elevex.com"
               autoComplete="email"
               {...register('email')}
             />

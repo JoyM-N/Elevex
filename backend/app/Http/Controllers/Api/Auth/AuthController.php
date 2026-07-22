@@ -33,7 +33,7 @@ class AuthController extends Controller
 
         return $this->success(
             data: [
-                'user'       => new UserResource($result['user']),
+                'user'       => (new UserResource($result['user']))->resolve(),
                 'token'      => $result['token'],
                 'token_type' => 'Bearer',
             ],

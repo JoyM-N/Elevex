@@ -33,7 +33,11 @@ class EvaluationFactory extends Factory
             'initiative_score'      => fake()->numberBetween(1, 5),
             'problem_solving_score' => fake()->numberBetween(1, 5),
             'teamwork_score'        => fake()->numberBetween(1, 5),
-            'remarks'               => fake()->paragraph(),
+            'remarks'               => fake()->randomElement([
+                'Strong communication and reliable delivery this cycle. Keep documenting blockers early.',
+                'Good teamwork and initiative. Focus next on tightening estimate accuracy.',
+                'Consistent progress overall. Encourage more proactive updates in standup notes.',
+            ]),
         ];
     }
 

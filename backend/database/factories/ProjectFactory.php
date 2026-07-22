@@ -29,8 +29,18 @@ class ProjectFactory extends Factory
         $endDate   = fake()->dateTimeBetween('now', '+3 months');
 
         return [
-            'title'       => fake()->sentence(4),
-            'description' => fake()->paragraph(),
+            'title'       => fake()->randomElement([
+                'Customer Support Portal',
+                'Mobile Attendance Tracker',
+                'Inventory Sync Service',
+                'Learning Path Builder',
+                'Team Collaboration Hub',
+            ]),
+            'description' => fake()->randomElement([
+                'Deliver a polished product experience with clear milestones and measurable outcomes.',
+                'Improve day-to-day operations with reliable workflows, reporting, and admin controls.',
+                'Ship an MVP that covers core user journeys, then iterate based on feedback.',
+            ]),
             'status'      => ProjectStatus::Active,
             'priority'    => fake()->randomElement(ProjectPriority::values()),
             'start_date'  => $startDate,

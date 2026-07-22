@@ -10,6 +10,28 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const LARAVEL_API_URL = process.env.LARAVEL_API_URL || 'http://localhost:8000'
 
+/**
+ * Bind Laravel cookies to the Next.js host (Vercel), not the Railway API host.
+ * Strips Domain=… and forces Secure when the browser request is HTTPS.
+ */
+function rewriteSetCookieForProxy(raw: string, requestUrl: URL): string {
+  const parts = raw.split(';').map((p) => p.trim()).filter(Boolean)
+  if (parts.length === 0) return raw
+
+  const [nameValue, ...attrs] = parts
+  const kept = attrs.filter((attr) => {
+    const lower = attr.toLowerCase()
+    return !lower.startsWith('domain=')
+  })
+
+  const hasSecure = kept.some((a) => a.toLowerCase() === 'secure')
+  if (requestUrl.protocol === 'https:' && !hasSecure) {
+    kept.push('Secure')
+  }
+
+  return [nameValue, ...kept].join('; ')
+}
+
 async function handler(request: NextRequest): Promise<NextResponse> {
   const path = request.nextUrl.pathname.replace('/api', '')
   const search = request.nextUrl.search
@@ -86,12 +108,18 @@ async function handler(request: NextRequest): Promise<NextResponse> {
 
   if (setCookies.length > 0) {
     for (const cookie of setCookies) {
-      nextResponse.headers.append('Set-Cookie', cookie)
+      nextResponse.headers.append(
+        'Set-Cookie',
+        rewriteSetCookieForProxy(cookie, request.nextUrl)
+      )
     }
   } else {
     response.headers.forEach((value, key) => {
       if (key.toLowerCase() === 'set-cookie') {
-        nextResponse.headers.append('Set-Cookie', value)
+        nextResponse.headers.append(
+          'Set-Cookie',
+          rewriteSetCookieForProxy(value, request.nextUrl)
+        )
       }
     })
   }

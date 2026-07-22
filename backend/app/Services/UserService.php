@@ -146,6 +146,90 @@ class UserService
     }
 
     /**
+     * Update intern account fields and active internship details.
+     */
+    public function updateIntern(User $intern, array $data): User
+    {
+        if ($intern->role !== UserRole::Intern) {
+            throw ValidationException::withMessages([
+                'user' => ['Only intern accounts can be updated here.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($intern, $data) {
+            $userPayload = [];
+
+            foreach (['name', 'email', 'phone'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $userPayload[$field] = $data[$field];
+                }
+            }
+
+            if (array_key_exists('is_active', $data)) {
+                $userPayload['is_active'] = (bool) $data['is_active'];
+            }
+
+            if (!empty($data['password'])) {
+                $userPayload['password'] = $data['password'];
+            }
+
+            if ($userPayload !== []) {
+                $intern->update($userPayload);
+            }
+
+            $internshipFields = [
+                'department',
+                'university',
+                'student_id',
+                'start_date',
+                'end_date',
+                'supervisor_id',
+                'notes',
+            ];
+
+            $hasInternshipUpdate = collect($internshipFields)
+                ->contains(fn (string $field) => array_key_exists($field, $data));
+
+            if ($hasInternshipUpdate) {
+                $internship = $intern->activeInternship;
+
+                if (!$internship) {
+                    throw ValidationException::withMessages([
+                        'department' => ['This intern has no active internship to update.'],
+                    ]);
+                }
+
+                $internshipPayload = [];
+
+                foreach (['department', 'university', 'student_id', 'start_date', 'end_date', 'notes'] as $field) {
+                    if (array_key_exists($field, $data)) {
+                        $internshipPayload[$field] = $data[$field];
+                    }
+                }
+
+                if (array_key_exists('supervisor_id', $data) && $data['supervisor_id'] !== null) {
+                    $supervisor = User::findOrFail($data['supervisor_id']);
+                    if (!$supervisor->isAdminOrAbove()) {
+                        throw ValidationException::withMessages([
+                            'supervisor_id' => ['Supervisor must be an admin.'],
+                        ]);
+                    }
+                    $internshipPayload['supervisor_id'] = $supervisor->id;
+                }
+
+                if ($internshipPayload !== []) {
+                    $internship->update($internshipPayload);
+                }
+            }
+
+            return $intern->fresh()->load([
+                'activeInternship.supervisor',
+                'internships.supervisor',
+            ]);
+        });
+    }
+
+    /**
      * Update profile fields the user is allowed to change (name, phone).
      */
     public function updateProfile(User $user, array $data): User

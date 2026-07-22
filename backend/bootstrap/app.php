@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
+        // Railway / reverse proxies terminate TLS; trust forwarded proto/host
+        $middleware->trustProxies(at: '*');
+
         // Add session middleware to API routes
         // Required for Sanctum SPA cookie-based authentication
         $middleware->appendToGroup('api', [

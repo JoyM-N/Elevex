@@ -29,7 +29,10 @@ export function TopPerformerWidget({
         <h3 className="font-heading text-base font-semibold tracking-tight">
           Top performer
         </h3>
-        <p className="text-xs text-muted-foreground">Highest overall score</p>
+        <p className="text-xs text-muted-foreground">
+          Highest overall score (0–100). Low numbers usually mean sparse
+          completed work or missing evaluations — not a broken meter.
+        </p>
       </div>
 
       {!performer ? (

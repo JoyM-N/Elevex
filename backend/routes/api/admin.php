@@ -29,6 +29,8 @@ Route::get('dashboard', [DashboardController::class, 'index']);
 Route::get('interns', [InternController::class, 'index']);
 Route::post('interns', [InternController::class, 'store']);
 Route::get('interns/{user}', [InternController::class, 'show']);
+Route::put('interns/{user}', [InternController::class, 'update']);
+Route::patch('interns/{user}', [InternController::class, 'update']);
 
 // Projects
 Route::apiResource('projects', ProjectController::class);

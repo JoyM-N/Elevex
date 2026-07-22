@@ -122,6 +122,15 @@ export default function AdminInternsPage() {
                         Profile
                       </Button>
                       <Button
+                        variant="outline"
+                        size="sm"
+                        render={
+                          <Link href={`/admin/interns/${intern.id}/edit`} />
+                        }
+                      >
+                        Edit
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="sm"
                         render={
