@@ -36,14 +36,23 @@ class LogbookResource extends JsonResource
             'is_locked'        => $this->isLocked(),
 
             // Relationships — only when loaded
-            'user'        => new UserResource($this->whenLoaded('user')),
-            'task'        => new TaskResource($this->whenLoaded('task')),
-            'approved_by' => new UserResource($this->whenLoaded('approvedBy')),
+            'user'        => $this->whenLoaded(
+                'user',
+                fn () => new UserResource($this->user)
+            ),
+            'task'        => $this->whenLoaded(
+                'task',
+                fn () => new TaskResource($this->task)
+            ),
+            'approved_by' => $this->whenLoaded(
+                'approvedBy',
+                fn () => new UserResource($this->approvedBy)
+            ),
             'comments'    => CommentResource::collection($this->whenLoaded('comments')),
             'files'       => FileUploadResource::collection($this->whenLoaded('fileUploads')),
 
-            'created_at'  => $this->created_at->toISOString(),
-            'updated_at'  => $this->updated_at->toISOString(),
+            'created_at'  => $this->created_at?->toISOString(),
+            'updated_at'  => $this->updated_at?->toISOString(),
         ];
     }
 }

@@ -45,6 +45,9 @@ class LogbookService
             ->when(isset($filters['status']), function ($query) use ($filters) {
                 $query->where('status', $filters['status']);
             })
+            ->when(isset($filters['user_id']), function ($query) use ($filters) {
+                $query->where('user_id', $filters['user_id']);
+            })
             ->when(isset($filters['task_id']), function ($query) use ($filters) {
                 $query->where('task_id', $filters['task_id']);
             })
@@ -53,6 +56,80 @@ class LogbookService
             })
             ->latest('date')
             ->paginate($perPage);
+    }
+
+    /**
+     * Interns who have at least one logbook, with entry counts for the admin index.
+     */
+    public function getInternLogbookSummaries(int $perPage = 20): LengthAwarePaginator
+    {
+        return User::query()
+            ->where('role', 'intern')
+            ->whereHas('logbooks')
+            ->withCount([
+                'logbooks as entries_count',
+                'logbooks as pending_count' => fn ($q) => $q->where('status', LogbookStatus::Submitted),
+                'logbooks as approved_count' => fn ($q) => $q->where('status', LogbookStatus::Approved),
+                'logbooks as revision_count' => fn ($q) => $q->where('status', LogbookStatus::RevisionNeeded),
+                'logbooks as draft_count' => fn ($q) => $q->where('status', LogbookStatus::Draft),
+            ])
+            ->withSum('logbooks as total_hours', 'hours_worked')
+            ->with(['logbookSignoff.approvedBy'])
+            ->orderBy('name')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Finalize an intern's overall logbook after individual entries are reviewed.
+     *
+     * @throws ValidationException
+     */
+    public function finalizeInternLogbook(User $intern, User $admin, ?string $note = null): \App\Models\LogbookSignoff
+    {
+        if (!$intern->isIntern()) {
+            throw ValidationException::withMessages([
+                'user' => ['Only intern accounts have logbooks to finalize.'],
+            ]);
+        }
+
+        $existing = \App\Models\LogbookSignoff::where('user_id', $intern->id)->first();
+        if ($existing) {
+            throw ValidationException::withMessages([
+                'logbook' => ['This intern\'s logbook has already been finalized.'],
+            ]);
+        }
+
+        $pending = Logbook::where('user_id', $intern->id)
+            ->whereIn('status', [
+                LogbookStatus::Submitted,
+                LogbookStatus::RevisionNeeded,
+            ])
+            ->count();
+
+        if ($pending > 0) {
+            throw ValidationException::withMessages([
+                'logbook' => [
+                    "There are still {$pending} entries awaiting review or revision. Review them before finalizing.",
+                ],
+            ]);
+        }
+
+        $approved = Logbook::where('user_id', $intern->id)
+            ->where('status', LogbookStatus::Approved)
+            ->count();
+
+        if ($approved === 0) {
+            throw ValidationException::withMessages([
+                'logbook' => ['At least one approved log entry is required before finalizing.'],
+            ]);
+        }
+
+        return \App\Models\LogbookSignoff::create([
+            'user_id'     => $intern->id,
+            'approved_by' => $admin->id,
+            'approved_at' => now(),
+            'note'        => $note,
+        ])->load('approvedBy');
     }
 
     /**
@@ -92,7 +169,7 @@ class LogbookService
             ...$data,
             'user_id' => $intern->id,
             'status'  => LogbookStatus::Draft,
-        ]);
+        ])->fresh(['user', 'task', 'approvedBy']);
     }
 
     /**
@@ -107,7 +184,7 @@ class LogbookService
         $logbook = Logbook::findOrFail($id);
         $logbook->update($data);
 
-        return $logbook->fresh();
+        return $logbook->fresh(['user', 'task', 'approvedBy', 'comments.user', 'fileUploads']);
     }
 
     /**
@@ -135,7 +212,7 @@ class LogbookService
             'status' => LogbookStatus::Submitted,
         ]);
 
-        return $logbook->fresh();
+        return $logbook->fresh(['user', 'task', 'approvedBy', 'comments.user', 'fileUploads']);
     }
 
     /**

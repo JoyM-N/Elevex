@@ -39,7 +39,9 @@ Route::apiResource('projects.milestones', MilestoneController::class);
 // Tasks
 Route::apiResource('tasks', TaskController::class);
 
-// Logbooks
+// Logbooks — intern-centric index + entry review
+Route::get('logbooks/interns', [LogbookController::class, 'interns']);
+Route::post('logbooks/interns/{user}/finalize', [LogbookController::class, 'finalize']);
 Route::get('logbooks', [LogbookController::class, 'index']);
 Route::get('logbooks/{logbook}', [LogbookController::class, 'show']);
 Route::patch('logbooks/{logbook}/review', [LogbookController::class, 'review']);

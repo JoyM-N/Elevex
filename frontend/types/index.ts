@@ -139,6 +139,29 @@ export interface Task {
 
 export type LogbookStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'revision_needed'
 
+export interface LogbookSignoff {
+  id: number
+  user_id: number
+  approved_at: string
+  note: string | null
+  approved_by?: User
+  created_at: string
+}
+
+export interface InternLogbookSummary {
+  id: number
+  name: string
+  email: string
+  entries_count: number
+  pending_count: number
+  approved_count: number
+  revision_count: number
+  draft_count: number
+  total_hours: number
+  is_finalized: boolean
+  signoff: LogbookSignoff | null
+}
+
 export interface Logbook {
   id: number
   date: string
