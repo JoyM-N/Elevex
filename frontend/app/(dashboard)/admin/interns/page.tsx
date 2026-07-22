@@ -41,9 +41,10 @@ export default function AdminInternsPage() {
           <h2 className="font-heading text-2xl font-semibold tracking-tight">
             Interns
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Profiles, onboarding, performance, and skills
-          </p>
+        <p className="text-sm text-muted-foreground">
+          Profiles, onboarding, performance, and skills. Department comes from
+          each intern&apos;s active internship.
+        </p>
         </div>
         <Button
           render={<Link href="/admin/interns/new" />}

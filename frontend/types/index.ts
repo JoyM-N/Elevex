@@ -300,6 +300,7 @@ export interface RecommendationLetter {
   generated_at: string | null
   approved_at: string | null
   admin_notes: string | null
+  body: string | null
   user?: User
   internship?: Internship
   approved_by?: User
@@ -414,6 +415,18 @@ export interface SickDay {
   approved_at: string | null
   user?: User
   approved_by?: User
+  created_at: string
+}
+
+// ============================================================
+// Public Holiday
+// ============================================================
+
+export interface PublicHoliday {
+  id: number
+  date: string
+  name: string
+  country: string
   created_at: string
 }
 

@@ -1,5 +1,6 @@
-import { ComingSoon } from '@/components/shared/coming-soon'
+import { redirect } from 'next/navigation'
 
-export default function Page() {
-  return <ComingSoon title="Settings" />
+/** Old Settings URL — send admins to sick day approvals */
+export default function AdminSettingsRedirect() {
+  redirect('/admin/sick-days')
 }

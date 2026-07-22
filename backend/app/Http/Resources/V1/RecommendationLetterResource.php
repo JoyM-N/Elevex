@@ -26,6 +26,7 @@ class RecommendationLetterResource extends JsonResource
             'generated_at' => $this->generated_at?->toISOString(),
             'approved_at'  => $this->approved_at?->toISOString(),
             'admin_notes'  => $this->admin_notes,
+            'body'         => $this->body,
 
             // Only included when relationship is loaded
             'user'        => new UserResource($this->whenLoaded('user')),

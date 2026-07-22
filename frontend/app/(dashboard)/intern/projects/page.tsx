@@ -1,11 +1,12 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listInternProjects } from '@/lib/api/intern/projects'
 import { PriorityBadge, StatusBadge } from '@/components/admin/projects/badges'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -23,11 +24,31 @@ function humanize(role?: string | null) {
 
 export default function InternProjectsPage() {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['intern', 'projects', page],
-    queryFn: () => listInternProjects({ page, per_page: 15 }),
+    queryFn: () => listInternProjects({ page, per_page: 50 }),
   })
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const rows = data?.data ?? []
+    if (!q) return rows
+    return rows.filter((project) => {
+      const haystack = [
+        project.title,
+        project.status,
+        project.status_label,
+        project.priority,
+        project.my_team_role,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [data?.data, search])
 
   return (
     <div className="page-enter space-y-6">
@@ -39,6 +60,13 @@ export default function InternProjectsPage() {
           Projects you are assigned to
         </p>
       </div>
+
+      <Input
+        placeholder="Search projects…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="max-w-xs"
+      />
 
       {isLoading ? (
         <Skeleton className="h-64 w-full rounded-xl" />
@@ -56,6 +84,13 @@ export default function InternProjectsPage() {
             You haven&apos;t been assigned to any projects.
           </p>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl bg-card px-6 py-16 text-center ring-1 ring-border/80">
+          <p className="font-heading text-lg font-semibold">No matches</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try another search term.
+          </p>
+        </div>
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl bg-card ring-1 ring-border/80">
@@ -70,7 +105,7 @@ export default function InternProjectsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(data?.data ?? []).map((project) => (
+                {filtered.map((project) => (
                   <TableRow key={project.id}>
                     <TableCell>
                       <Link
@@ -104,7 +139,7 @@ export default function InternProjectsPage() {
             </Table>
           </div>
 
-          {data?.meta && data.meta.last_page > 1 ? (
+          {data?.meta && data.meta.last_page > 1 && !search.trim() ? (
             <div className="flex items-center justify-between text-sm">
               <p className="text-muted-foreground">
                 Page {data.meta.current_page} of {data.meta.last_page}

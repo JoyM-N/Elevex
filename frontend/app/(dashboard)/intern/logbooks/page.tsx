@@ -8,6 +8,7 @@ import { listInternLogbooks } from '@/lib/api/intern/logbooks'
 import { logbookStatusValues } from '@/lib/validations/logbooks'
 import { LogbookStatusBadge } from '@/components/shared/logbooks/badges'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -22,6 +23,7 @@ import type { LogbookStatus } from '@/types'
 export default function InternLogbooksPage() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<LogbookStatus | ''>('')
+  const [search, setSearch] = useState('')
 
   const queryKey = useMemo(
     () => ['intern', 'logbooks', { status, page }],
@@ -33,10 +35,29 @@ export default function InternLogbooksPage() {
     queryFn: () =>
       listInternLogbooks({
         page,
-        per_page: 15,
+        per_page: 50,
         status: status || undefined,
       }),
   })
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const rows = data?.data ?? []
+    if (!q) return rows
+    return rows.filter((logbook) => {
+      const haystack = [
+        logbook.date,
+        logbook.task?.title,
+        logbook.status,
+        logbook.status_label,
+        String(logbook.hours_worked),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [data?.data, search])
 
   return (
     <div className="page-enter space-y-6">
@@ -55,21 +76,29 @@ export default function InternLogbooksPage() {
         </Button>
       </div>
 
-      <select
-        className="flex h-9 w-fit rounded-lg border border-input bg-transparent px-2.5 text-sm"
-        value={status}
-        onChange={(e) => {
-          setPage(1)
-          setStatus(e.target.value as LogbookStatus | '')
-        }}
-      >
-        <option value="">All statuses</option>
-        {logbookStatusValues.map((s) => (
-          <option key={s} value={s}>
-            {s.replaceAll('_', ' ')}
-          </option>
-        ))}
-      </select>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Input
+          placeholder="Search by task or date…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <select
+          className="flex h-9 w-fit rounded-lg border border-input bg-transparent px-2.5 text-sm"
+          value={status}
+          onChange={(e) => {
+            setPage(1)
+            setStatus(e.target.value as LogbookStatus | '')
+          }}
+        >
+          <option value="">All statuses</option>
+          {logbookStatusValues.map((s) => (
+            <option key={s} value={s}>
+              {s.replaceAll('_', ' ')}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {isLoading ? (
         <Skeleton className="h-64 w-full rounded-xl" />
@@ -87,6 +116,13 @@ export default function InternLogbooksPage() {
             Create an entry after you work on a task.
           </p>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl bg-card px-6 py-16 text-center ring-1 ring-border/80">
+          <p className="font-heading text-lg font-semibold">No matches</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try another search or status filter.
+          </p>
+        </div>
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl bg-card ring-1 ring-border/80">
@@ -100,7 +136,7 @@ export default function InternLogbooksPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(data?.data ?? []).map((logbook) => (
+                {filtered.map((logbook) => (
                   <TableRow key={logbook.id} className="hover:bg-muted/40">
                     <TableCell>
                       <Link
@@ -127,7 +163,7 @@ export default function InternLogbooksPage() {
               </TableBody>
             </Table>
           </div>
-          {data?.meta && data.meta.last_page > 1 ? (
+          {data?.meta && data.meta.last_page > 1 && !search.trim() ? (
             <div className="flex items-center justify-between text-sm">
               <p className="text-muted-foreground">
                 Page {data.meta.current_page} of {data.meta.last_page}

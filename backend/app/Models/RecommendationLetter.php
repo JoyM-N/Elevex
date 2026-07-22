@@ -6,7 +6,6 @@ use App\Enums\RecommendationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class RecommendationLetter extends Model
 {
@@ -21,6 +20,7 @@ class RecommendationLetter extends Model
         'generated_at',
         'approved_at',
         'admin_notes',
+        'body',
     ];
 
     protected function casts(): array
@@ -53,7 +53,8 @@ class RecommendationLetter extends Model
             return null;
         }
 
-        return Storage::disk('public')->url($this->pdf_path);
+        // Public disk files are served from /storage/...
+        return asset('storage/' . ltrim((string) $this->pdf_path, '/'));
     }
 
     public function user(): BelongsTo

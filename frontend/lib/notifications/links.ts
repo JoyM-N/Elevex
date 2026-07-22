@@ -34,14 +34,10 @@ export function notificationHref(
     case 'recommendation_status_changed':
       return admin ? '/admin/recommendations' : '/intern/recommendations'
     case 'sick_day_status_changed':
-      return admin ? '/admin/settings' : '/intern/profile'
+      return admin ? '/admin/sick-days' : '/intern/sick-days'
     default:
       return null
   }
-}
-
-export function notificationsListPath(role: UserRole | undefined): string {
-  return isAdminRole(role) ? '/admin/notifications' : '/intern/notifications'
 }
 
 export function formatNotificationRelative(iso: string): string {

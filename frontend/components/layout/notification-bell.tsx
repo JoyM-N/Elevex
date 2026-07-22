@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell, CheckCheck, Loader2 } from 'lucide-react'
@@ -15,7 +14,6 @@ import {
 import {
   formatNotificationRelative,
   notificationHref,
-  notificationsListPath,
 } from '@/lib/notifications/links'
 import {
   DropdownMenu,
@@ -63,8 +61,7 @@ export function NotificationBell() {
     onSuccess: invalidate,
   })
 
-  const notifications: Notification[] = (list?.data ?? []).slice(0, 8)
-  const listPath = notificationsListPath(role)
+  const notifications: Notification[] = list?.data ?? []
 
   function handleOpen(notification: Notification) {
     if (!notification.read) {
@@ -148,17 +145,6 @@ export function NotificationBell() {
               ))}
             </DropdownMenuGroup>
           )}
-        </div>
-
-        <DropdownMenuSeparator className="m-0" />
-        <div className="p-1.5">
-          <Link
-            href={listPath}
-            onClick={() => setOpen(false)}
-            className="flex w-full items-center justify-center rounded-md px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-muted"
-          >
-            View all notifications
-          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

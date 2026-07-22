@@ -69,7 +69,10 @@ Route::get('reports/performance/{user}', [ReportController::class, 'performance'
 
 // Recommendation Letters
 Route::get('recommendations', [RecommendationController::class, 'index']);
+Route::post('recommendations', [RecommendationController::class, 'store']);
 Route::get('recommendations/{letter}', [RecommendationController::class, 'show']);
+Route::put('recommendations/{letter}', [RecommendationController::class, 'update']);
+Route::post('recommendations/{letter}/regenerate', [RecommendationController::class, 'regenerate']);
 Route::post('recommendations/{letter}/approve', [RecommendationController::class, 'approve']);
 Route::post('recommendations/{letter}/reject', [RecommendationController::class, 'reject']);
 

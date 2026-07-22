@@ -1,7 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { NotificationsPage } from '@/components/shared/notifications/notifications-page'
-
-export default function InternNotificationsPage() {
-  return <NotificationsPage />
+export default function InternNotificationsRedirect() {
+  redirect('/intern/dashboard')
 }

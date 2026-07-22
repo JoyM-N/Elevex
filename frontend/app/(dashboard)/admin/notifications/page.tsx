@@ -1,7 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { NotificationsPage } from '@/components/shared/notifications/notifications-page'
-
-export default function AdminNotificationsPage() {
-  return <NotificationsPage />
+export default function AdminNotificationsRedirect() {
+  redirect('/admin/dashboard')
 }

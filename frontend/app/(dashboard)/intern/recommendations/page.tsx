@@ -61,7 +61,8 @@ export default function InternRecommendationsPage() {
             Recommendations
           </h2>
           <p className="text-sm text-muted-foreground">
-            Request a letter based on your internship performance
+            Request a letter — admins draft it from your performance, then
+            approve a final PDF for download
           </p>
         </div>
         <Button

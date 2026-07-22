@@ -20,6 +20,36 @@ export async function getRecommendation(
   return response.data.data
 }
 
+export async function generateRecommendation(
+  userId: number
+): Promise<RecommendationLetter> {
+  const response = await apiClient.post<ApiResponse<RecommendationLetter>>(
+    '/v1/admin/recommendations',
+    { user_id: userId }
+  )
+  return response.data.data
+}
+
+export async function updateRecommendationDraft(
+  id: number,
+  body: string
+): Promise<RecommendationLetter> {
+  const response = await apiClient.put<ApiResponse<RecommendationLetter>>(
+    `/v1/admin/recommendations/${id}`,
+    { body }
+  )
+  return response.data.data
+}
+
+export async function regenerateRecommendationDraft(
+  id: number
+): Promise<RecommendationLetter> {
+  const response = await apiClient.post<ApiResponse<RecommendationLetter>>(
+    `/v1/admin/recommendations/${id}/regenerate`
+  )
+  return response.data.data
+}
+
 export async function approveRecommendation(
   id: number
 ): Promise<RecommendationLetter> {

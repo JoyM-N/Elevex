@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\RecommendationLetterResource;
+use App\Models\RecommendationLetter;
 use App\Services\RecommendationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -12,8 +13,7 @@ use Illuminate\Http\Request;
 /**
  * RecommendationController (Admin)
  *
- * Admins can view all letter requests and approve or reject them.
- * Approving triggers PDF generation via RecommendationService.
+ * Admins generate drafts from performance, edit them, then approve or reject.
  */
 class RecommendationController extends Controller
 {
@@ -23,10 +23,6 @@ class RecommendationController extends Controller
         private readonly RecommendationService $recommendationService
     ) {}
 
-    /**
-     * GET /api/v1/admin/recommendations
-     * List all recommendation letter requests.
-     */
     public function index(Request $request): JsonResponse
     {
         $letters = $this->recommendationService->getAllLetters(
@@ -40,14 +36,38 @@ class RecommendationController extends Controller
     }
 
     /**
-     * GET /api/v1/admin/recommendations/{letter}
-     * View a single recommendation letter request.
+     * POST /api/v1/admin/recommendations
+     * Generate a draft letter for an intern from their performance data.
      */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $this->authorize('create', RecommendationLetter::class);
+
+        $letter = $this->recommendationService->generateForIntern(
+            userId: (int) $request->integer('user_id'),
+            admin: $request->user()
+        );
+
+        return $this->created(
+            new RecommendationLetterResource($letter),
+            'Draft recommendation letter generated successfully.'
+        );
+    }
+
     public function show(Request $request, int $id): JsonResponse
     {
         $letter = $this->recommendationService->getLetterById($id);
 
         $this->authorize('view', $letter);
+
+        // Older pending records may lack a body — generate a draft on first view.
+        if ($letter->isPending() && !filled($letter->body)) {
+            $letter = $this->recommendationService->regenerateDraft($id);
+        }
 
         return $this->success(
             new RecommendationLetterResource($letter),
@@ -56,27 +76,56 @@ class RecommendationController extends Controller
     }
 
     /**
-     * POST /api/v1/admin/recommendations/{letter}/approve
-     * Approve a letter request and generate the PDF.
+     * PUT /api/v1/admin/recommendations/{letter}
+     * Save edits to the draft body.
      */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'body' => ['required', 'string'],
+        ]);
+
+        $letter = $this->recommendationService->getLetterById($id);
+        $this->authorize('update', $letter);
+
+        $letter = $this->recommendationService->updateDraft($id, $request->string('body')->toString());
+
+        return $this->success(
+            new RecommendationLetterResource($letter),
+            'Draft recommendation letter updated successfully.'
+        );
+    }
+
+    /**
+     * POST /api/v1/admin/recommendations/{letter}/regenerate
+     * Rebuild draft body from current performance metrics.
+     */
+    public function regenerate(Request $request, int $id): JsonResponse
+    {
+        $letter = $this->recommendationService->getLetterById($id);
+        $this->authorize('update', $letter);
+
+        $letter = $this->recommendationService->regenerateDraft($id);
+
+        return $this->success(
+            new RecommendationLetterResource($letter),
+            'Draft regenerated from performance data.'
+        );
+    }
+
     public function approve(Request $request, int $id): JsonResponse
     {
         $letter = $this->recommendationService->getLetterById($id);
-
         $this->authorize('approve', $letter);
 
         $letter = $this->recommendationService->approveLetter($id, $request->user());
 
         return $this->success(
             new RecommendationLetterResource($letter),
-            'Recommendation letter approved and generated successfully.'
+            'Recommendation letter approved and PDF generated successfully.'
         );
     }
 
-    /**
-     * POST /api/v1/admin/recommendations/{letter}/reject
-     * Reject a letter request with optional notes.
-     */
     public function reject(Request $request, int $id): JsonResponse
     {
         $request->validate([
@@ -84,7 +133,6 @@ class RecommendationController extends Controller
         ]);
 
         $letter = $this->recommendationService->getLetterById($id);
-
         $this->authorize('approve', $letter);
 
         $letter = $this->recommendationService->rejectLetter(

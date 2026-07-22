@@ -11,7 +11,7 @@ enum RecommendationStatus: string
     public function label(): string
     {
         return match($this) {
-            self::Pending  => 'Pending',
+            self::Pending  => 'Draft',
             self::Approved => 'Approved',
             self::Rejected => 'Rejected',
         };

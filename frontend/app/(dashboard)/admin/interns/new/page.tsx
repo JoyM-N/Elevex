@@ -85,7 +85,8 @@ export default function OnboardInternPage() {
             Onboard intern
           </h2>
           <p className="text-sm text-muted-foreground">
-            Create their account and start an active internship
+            Creates their login account and an active internship (department,
+            dates, and supervisor) in one step
           </p>
         </div>
       </div>

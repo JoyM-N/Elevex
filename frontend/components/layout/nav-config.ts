@@ -8,11 +8,11 @@ import {
   ClipboardCheck,
   FileBarChart,
   FileText,
-  Settings,
   Shield,
   Trophy,
   ScrollText,
-  Bell,
+  Thermometer,
+  CalendarDays,
 } from 'lucide-react'
 import type { UserRole } from '@/types'
 
@@ -32,10 +32,10 @@ export const adminNavItems: NavItem[] = [
   { title: 'Logbooks', href: '/admin/logbooks', icon: BookOpen },
   { title: 'Interns', href: '/admin/interns', icon: Users },
   { title: 'Evaluations', href: '/admin/evaluations', icon: ClipboardCheck },
+  { title: 'Sick days', href: '/admin/sick-days', icon: Thermometer },
+  { title: 'Holidays', href: '/admin/holidays', icon: CalendarDays },
   { title: 'Reports', href: '/admin/reports', icon: FileBarChart },
   { title: 'Recommendations', href: '/admin/recommendations', icon: FileText },
-  { title: 'Notifications', href: '/admin/notifications', icon: Bell },
-  { title: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
 /** Super-admin only — admin account management */
@@ -53,9 +53,9 @@ export const internNavItems: NavItem[] = [
   { title: 'Projects', href: '/intern/projects', icon: FolderKanban },
   { title: 'Tasks', href: '/intern/tasks', icon: ListTodo },
   { title: 'Logbooks', href: '/intern/logbooks', icon: BookOpen },
+  { title: 'Sick days', href: '/intern/sick-days', icon: Thermometer },
   { title: 'Performance', href: '/intern/performance', icon: Trophy },
   { title: 'Recommendations', href: '/intern/recommendations', icon: ScrollText },
-  { title: 'Notifications', href: '/intern/notifications', icon: Bell },
 ]
 
 export function getNavForRole(role: UserRole | undefined): {

@@ -6,26 +6,26 @@ export async function getMyPerformance(): Promise<PerformanceMetric | null> {
   const response = await apiClient.get<ApiResponse<PerformanceMetric | null>>(
     '/v1/intern/performance'
   )
-  return response.data.data
+  return response.data.data ?? null
 }
 
 export async function getMyAchievements(): Promise<Achievement[]> {
   const response = await apiClient.get<ApiResponse<Achievement[]>>(
     '/v1/intern/achievements'
   )
-  return response.data.data
+  return response.data.data ?? []
 }
 
 export async function listAvailableSkills(): Promise<Skill[]> {
   const response = await apiClient.get<ApiResponse<Skill[]>>('/v1/intern/skills')
-  return response.data.data
+  return response.data.data ?? []
 }
 
 export async function getMySkills(): Promise<Skill[]> {
   const response = await apiClient.get<ApiResponse<Skill[]>>(
     '/v1/intern/skills/mine'
   )
-  return response.data.data
+  return response.data.data ?? []
 }
 
 export async function assignMySkill(data: AssignSkillData): Promise<void> {

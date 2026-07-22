@@ -25,7 +25,16 @@ class RecommendationLetterPolicy
 
     public function create(User $user): bool
     {
-        return $user->isIntern();
+        return $user->isIntern() || $user->isAdminOrAbove();
+    }
+
+    public function update(User $user, RecommendationLetter $letter): bool
+    {
+        if (!$letter->isPending()) {
+            return false;
+        }
+
+        return $user->isAdminOrAbove();
     }
 
     public function approve(User $user, RecommendationLetter $letter): bool
