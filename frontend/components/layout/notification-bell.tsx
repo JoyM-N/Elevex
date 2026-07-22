@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell, CheckCheck, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
@@ -10,6 +12,11 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/lib/api/notifications'
+import {
+  formatNotificationRelative,
+  notificationHref,
+  notificationsListPath,
+} from '@/lib/notifications/links'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,20 +28,10 @@ import {
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/types'
 
-function formatRelative(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
 export function NotificationBell() {
   const { user } = useAuth()
   const role = user?.role
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
 
@@ -47,7 +44,7 @@ export function NotificationBell() {
   })
 
   const { data: list, isLoading } = useQuery({
-    queryKey: ['notifications', 'list', role],
+    queryKey: ['notifications', 'list', role, 'preview'],
     queryFn: () => listNotifications(role, 1),
     enabled: !!role && open,
   })
@@ -66,7 +63,17 @@ export function NotificationBell() {
     onSuccess: invalidate,
   })
 
-  const notifications: Notification[] = list?.data ?? []
+  const notifications: Notification[] = (list?.data ?? []).slice(0, 8)
+  const listPath = notificationsListPath(role)
+
+  function handleOpen(notification: Notification) {
+    if (!notification.read) {
+      markRead.mutate(notification.id)
+    }
+    setOpen(false)
+    const href = notificationHref(notification, role)
+    if (href) router.push(href)
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -121,9 +128,7 @@ export function NotificationBell() {
                     'cursor-pointer items-start gap-2 rounded-none px-3 py-2.5',
                     !n.read && 'bg-primary/5'
                   )}
-                  onClick={() => {
-                    if (!n.read) markRead.mutate(n.id)
-                  }}
+                  onClick={() => handleOpen(n)}
                 >
                   <span
                     className={cn(
@@ -136,13 +141,24 @@ export function NotificationBell() {
                       {n.message}
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      {formatRelative(n.created_at)}
+                      {formatNotificationRelative(n.created_at)}
                     </p>
                   </div>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
           )}
+        </div>
+
+        <DropdownMenuSeparator className="m-0" />
+        <div className="p-1.5">
+          <Link
+            href={listPath}
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center justify-center rounded-md px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-muted"
+          >
+            View all notifications
+          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

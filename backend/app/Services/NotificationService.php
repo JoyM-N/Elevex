@@ -28,7 +28,7 @@ class NotificationService
      */
     public function getNotifications(User $user, int $perPage = 20)
     {
-        return $user->notifications()->paginate($perPage);
+        return $user->notifications()->latest()->paginate($perPage);
     }
 
     /**

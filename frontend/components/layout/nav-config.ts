@@ -12,6 +12,7 @@ import {
   Shield,
   Trophy,
   ScrollText,
+  Bell,
 } from 'lucide-react'
 import type { UserRole } from '@/types'
 
@@ -33,6 +34,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Evaluations', href: '/admin/evaluations', icon: ClipboardCheck },
   { title: 'Reports', href: '/admin/reports', icon: FileBarChart },
   { title: 'Recommendations', href: '/admin/recommendations', icon: FileText },
+  { title: 'Notifications', href: '/admin/notifications', icon: Bell },
   { title: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
@@ -53,6 +55,7 @@ export const internNavItems: NavItem[] = [
   { title: 'Logbooks', href: '/intern/logbooks', icon: BookOpen },
   { title: 'Performance', href: '/intern/performance', icon: Trophy },
   { title: 'Recommendations', href: '/intern/recommendations', icon: ScrollText },
+  { title: 'Notifications', href: '/intern/notifications', icon: Bell },
 ]
 
 export function getNavForRole(role: UserRole | undefined): {
