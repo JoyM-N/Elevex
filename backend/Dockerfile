@@ -1,4 +1,4 @@
-FROM php:8.3-cli-bookworm
+FROM php:8.4-cli-bookworm
 
 # System deps + PHP extensions for Laravel, MySQL, DomPDF
 RUN apt-get update && apt-get install -y --no-install-recommends \
