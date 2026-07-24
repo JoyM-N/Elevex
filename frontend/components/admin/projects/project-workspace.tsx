@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -127,12 +127,18 @@ export function ProjectWorkspace({ project }: { project: Project }) {
   const [fields, setFields] = useState(baselineFields)
   const [members, setMembers] = useState(baselineMembers)
   const [milestones, setMilestones] = useState(baselineMilestones)
+  const [syncedProjectKey, setSyncedProjectKey] = useState(
+    () => `${project.id}:${project.updated_at}`
+  )
+  const projectKey = `${project.id}:${project.updated_at}`
 
-  useEffect(() => {
+  // Reset local draft when the server project changes (React prop→state pattern)
+  if (projectKey !== syncedProjectKey) {
+    setSyncedProjectKey(projectKey)
     setFields(baselineFields)
     setMembers(baselineMembers)
     setMilestones(baselineMilestones)
-  }, [baselineFields, baselineMembers, baselineMilestones])
+  }
 
   const fieldsDirty = !fieldsEqual(fields, baselineFields)
   const membersDirty = !membersEqual(members, baselineMembers)

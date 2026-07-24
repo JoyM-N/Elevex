@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -26,6 +26,7 @@ export default function AdminRecommendationDetailPage() {
   const queryClient = useQueryClient()
   const [notes, setNotes] = useState('')
   const [body, setBody] = useState('')
+  const [syncedLetterId, setSyncedLetterId] = useState<number | null>(null)
 
   const { data: letter, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', 'recommendations', id],
@@ -33,11 +34,11 @@ export default function AdminRecommendationDetailPage() {
     enabled: Number.isFinite(id),
   })
 
-  useEffect(() => {
-    if (letter?.body != null) {
-      setBody(letter.body)
-    }
-  }, [letter?.body, letter?.id])
+  // Sync draft textarea when a new letter payload arrives (React prop→state pattern)
+  if (letter && letter.id !== syncedLetterId) {
+    setSyncedLetterId(letter.id)
+    setBody(letter.body ?? '')
+  }
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['admin', 'recommendations'] })

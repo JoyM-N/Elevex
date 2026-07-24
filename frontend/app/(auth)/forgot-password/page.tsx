@@ -41,8 +41,11 @@ export default function ForgotPasswordPage() {
     onSuccess: () => {
       setSubmitted(true)
     },
-    onError: (error: any) => {
-      const apiErrors = error.response?.data?.errors
+    onError: (error: unknown) => {
+      const err = error as {
+        response?: { data?: { errors?: { email?: string[] } } }
+      }
+      const apiErrors = err.response?.data?.errors
       if (apiErrors?.email) {
         setError('email', { message: apiErrors.email[0] })
       } else {

@@ -48,12 +48,15 @@ function ResetPasswordForm() {
       toast.success('Password reset successfully. Please log in.')
       router.push('/login')
     },
-    onError: (error: any) => {
-      const apiErrors = error.response?.data?.errors
+    onError: (error: unknown) => {
+      const err = error as {
+        response?: { data?: { errors?: { email?: string[] }; message?: string } }
+      }
+      const apiErrors = err.response?.data?.errors
       if (apiErrors?.email) {
         setError('email', { message: apiErrors.email[0] })
       } else {
-        toast.error(error.response?.data?.message || 'Reset failed. Please try again.')
+        toast.error(err.response?.data?.message || 'Reset failed. Please try again.')
       }
     },
   })

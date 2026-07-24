@@ -1,8 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { useQuery } from '@tanstack/react-query'
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { listInterns } from '@/lib/api/admin/projects'
 import { teamRoleValues } from '@/lib/validations/projects'

@@ -58,7 +58,7 @@ class ProjectController extends Controller
 
 //GET /api/v1/admin/projects/{project}Get a single project with its milestones and members.
     
-    public function show(Request $request, $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $project = $this->projectService->getProjectById($id);
 
@@ -73,7 +73,7 @@ class ProjectController extends Controller
     
      // PUT /api/v1/admin/projects/{project} Update a project.
      
-    public function update(UpdateProjectRequest $request, $id): JsonResponse
+    public function update(UpdateProjectRequest $request, int $id): JsonResponse
     {
         $project = $this->projectService->updateProject(
             id: $id,
@@ -89,7 +89,7 @@ class ProjectController extends Controller
 
       //DELETE /api/v1/admin/projects/{project} Delete a project.
      
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $project = $this->projectService->getProjectById($id);
 
@@ -102,7 +102,7 @@ class ProjectController extends Controller
 
     //POST /api/v1/admin/projects/{project}/members Assign interns to a project.
     
-    public function assignMembers(AssignMembersRequest $request, $id): JsonResponse
+    public function assignMembers(AssignMembersRequest $request, int $id): JsonResponse
     {
         $project = $this->projectService->assignMembers(
             id: $id,
@@ -117,7 +117,7 @@ class ProjectController extends Controller
 
     // DELETE /api/v1/admin/projects/{project}/members/{user}Remove an intern from a project.
      
-    public function removeMember(Request $request, $projectId, $userId): JsonResponse
+    public function removeMember(Request $request, int $projectId, int $userId): JsonResponse
     {
         $project = $this->projectService->getProjectById($projectId);
 
